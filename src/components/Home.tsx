@@ -37,20 +37,20 @@ export const Home = () => {
   );
 
   const calculateSessionMinutes = (session: WorkSession) => {
-    if (!session.clockIn || !session.clockOut) return 0;
+    if (!session.clock_in || !session.clock_out) return 0;
     
     const toMinutes = (time: string) => {
       const [h, m] = time.split(':').map(Number);
       return h * 60 + m;
     };
 
-    const startMins = toMinutes(session.clockIn);
-    const endMins = toMinutes(session.clockOut);
+    const startMins = toMinutes(session.clock_in);
+    const endMins = toMinutes(session.clock_out);
     
     let restMins = 0;
     session.rests.forEach(r => {
-      if (r.start && r.end) {
-        restMins += (toMinutes(r.end) - toMinutes(r.start));
+      if (r.start_time && r.end_time) {
+        restMins += (toMinutes(r.end_time) - toMinutes(r.start_time));
       }
     });
 
@@ -158,7 +158,7 @@ export const Home = () => {
               <div key={sIdx} className="space-y-2 pb-4 border-b border-gray-100 last:border-0 last:pb-0">
                 <div className="flex justify-between items-center font-medium text-gray-600 text-sm mb-1">
                   <span>勤務セッション {sIdx + 1}</span>
-                  {session.clockIn && session.clockOut && (
+                  {session.clock_in && session.clock_out && (
                     <span className="bg-gray-100 px-2 py-0.5 rounded text-xs">
                       {(calculateSessionMinutes(session) / 60).toFixed(1)} h
                     </span>
@@ -166,19 +166,19 @@ export const Home = () => {
                 </div>
                 <div className="flex justify-between items-center py-2 border-b border-gray-50">
                   <span className="text-gray-500">出勤</span>
-                  <span className="font-medium font-mono text-lg">{session.clockIn}</span>
+                  <span className="font-medium font-mono text-lg">{session.clock_in}</span>
                 </div>
                 {session.rests.map((rest, idx) => (
                   <div key={idx} className="flex justify-between items-center py-2 border-b border-gray-50 text-orange-600 text-sm">
                     <span>休憩 {idx + 1}</span>
                     <span className="font-medium font-mono">
-                      {rest.start} - {rest.end || '休憩中'}
+                      {rest.start_time} - {rest.end_time || '休憩中'}
                     </span>
                   </div>
                 ))}
                 <div className="flex justify-between items-center py-2">
                   <span className="text-gray-500">退勤</span>
-                  <span className="font-medium font-mono text-lg">{session.clockOut || '--:--'}</span>
+                  <span className="font-medium font-mono text-lg">{session.clock_out || '--:--'}</span>
                 </div>
               </div>
             ))}

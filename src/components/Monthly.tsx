@@ -20,17 +20,17 @@ export const Monthly = () => {
     : monthRecords.filter(r => r.userId === selectedUserId);
 
   const calculateSessionMinutes = (session: WorkSession) => {
-    if (!session.clockIn || !session.clockOut) return 0;
+    if (!session.clock_in || !session.clock_out) return 0;
     const toMinutes = (time: string) => {
       const [h, m] = time.split(':').map(Number);
       return h * 60 + m;
     };
-    const startMins = toMinutes(session.clockIn);
-    const endMins = toMinutes(session.clockOut);
+    const startMins = toMinutes(session.clock_in);
+    const endMins = toMinutes(session.clock_out);
     let restMins = 0;
     session.rests.forEach((r: RestRecord) => {
-      if (r.start && r.end) {
-        restMins += (toMinutes(r.end) - toMinutes(r.start));
+      if (r.start_time && r.end_time) {
+        restMins += (toMinutes(r.end_time) - toMinutes(r.start_time));
       }
     });
     return Math.max(0, (endMins - startMins) - restMins);
@@ -52,7 +52,7 @@ export const Monthly = () => {
       const rate = getUserRate(r.userId);
       const cost = Math.floor(hours * rate);
       const sessionDetails = r.sessions
-        .map(s => `${s.clockIn}-${s.clockOut || '未退勤'}`)
+        .map(s => `${s.clock_in}-${s.clock_out || '未退勤'}`)
         .join(' / ');
       
       return [
@@ -180,7 +180,7 @@ export const Monthly = () => {
                     <div className="flex flex-wrap justify-center gap-2">
                       {r.sessions.map((s, idx) => (
                         <span key={idx} className="font-mono text-xs bg-gray-100 text-gray-600 px-2 py-1 rounded">
-                          {s.clockIn}-{s.clockOut || '...'}
+                          {s.clock_in}-{s.clock_out || '...'}
                         </span>
                       ))}
                       {r.sessions.length === 0 && <span className="text-gray-300">-</span>}

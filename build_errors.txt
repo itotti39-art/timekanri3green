@@ -1,0 +1,12 @@
+
+> timekanri3@0.0.0 build
+> tsc -b && vite build
+
+src/components/Calendar.tsx(190,53): error TS2551: Property 'clockIn' does not exist on type 'WorkSession'. Did you mean 'clock_in'?
+src/components/Calendar.tsx(201,53): error TS2551: Property 'clockOut' does not exist on type 'WorkSession'. Did you mean 'clock_out'?
+src/components/Calendar.tsx(216,69): error TS2339: Property 'start' does not exist on type 'RestRecord'.
+src/components/Calendar.tsx(227,69): error TS2339: Property 'end' does not exist on type 'RestRecord'.
+src/components/Calendar.tsx(247,66): error TS2353: Object literal may only specify known properties, and 'start' does not exist in type 'RestRecord'.
+src/components/Calendar.tsx(258,59): error TS2322: Type 'WorkSession | { id: string; clock_in: string; clock_out: string; rests: never[]; }' is not assignable to type 'WorkSession'.
+  Property 'record_id' is missing in type '{ id: string; clock_in: string; clock_out: string; rests: never[]; }' but required in type 'WorkSession'.
+src/components/Calendar.tsx(258,76): error TS2741: Property 'record_id' is missing in type '{ id: string; clock_in: string; clock_out: string; rests: never[]; }' but required in type 'WorkSession'.

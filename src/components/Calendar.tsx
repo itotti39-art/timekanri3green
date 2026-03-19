@@ -27,17 +27,17 @@ export const CalendarView = () => {
   };
 
   const calculateSessionMinutes = (session: WorkSession) => {
-    if (!session.clockIn || !session.clockOut) return 0;
+    if (!session.clock_in || !session.clock_out) return 0;
     const toMinutes = (time: string) => {
       const [h, m] = time.split(':').map(Number);
       return h * 60 + m;
     };
-    const startMins = toMinutes(session.clockIn);
-    const endMins = toMinutes(session.clockOut);
+    const startMins = toMinutes(session.clock_in);
+    const endMins = toMinutes(session.clock_out);
     let restMins = 0;
     session.rests.forEach(r => {
-      if (r.start && r.end) {
-        restMins += (toMinutes(r.end) - toMinutes(r.start));
+      if (r.start_time && r.end_time) {
+        restMins += (toMinutes(r.end_time) - toMinutes(r.start_time));
       }
     });
     return Math.max(0, (endMins - startMins) - restMins);
@@ -58,12 +58,12 @@ export const CalendarView = () => {
 
   const handleSaveEdit = (dayStr: string, record?: TimeRecord) => {
     // 空でないセッションのみ残す
-    const cleanedSessions = editSessions.filter(s => s.clockIn || s.clockOut);
+    const cleanedSessions = editSessions.filter(s => s.clock_in || s.clock_out);
 
     if (record) {
       updateRecord(record.id, {
         sessions: cleanedSessions,
-        state: cleanedSessions.some(s => s.clockIn && !s.clockOut) ? 'working' : 'finished'
+        state: cleanedSessions.some(s => s.clock_in && !s.clock_out) ? 'working' : 'finished'
       });
     } else {
       if (cleanedSessions.length > 0) {
@@ -72,7 +72,7 @@ export const CalendarView = () => {
           userId: currentUser.id,
           date: format(new Date(dayStr), 'yyyy-MM-dd'),
           sessions: cleanedSessions,
-          state: cleanedSessions.some(s => s.clockIn && !s.clockOut) ? 'working' : 'finished'
+          state: cleanedSessions.some(s => s.clock_in && !s.clock_out) ? 'working' : 'finished'
         });
       }
     }
@@ -184,10 +184,10 @@ export const CalendarView = () => {
                             <div className="flex items-center gap-2">
                               <input 
                                 type="time" 
-                                value={session.clockIn} 
+                                value={session.clock_in} 
                                 onChange={(e) => {
                                   const newSessions = [...editSessions];
-                                  newSessions[sIdx].clockIn = e.target.value;
+                                  newSessions[sIdx].clock_in = e.target.value;
                                   setEditSessions(newSessions);
                                 }}
                                 className="border border-gray-300 rounded p-1 text-sm bg-white"
@@ -195,10 +195,10 @@ export const CalendarView = () => {
                               <span className="text-gray-400">-</span>
                               <input 
                                 type="time" 
-                                value={session.clockOut || ''} 
+                                value={session.clock_out || ''} 
                                 onChange={(e) => {
                                   const newSessions = [...editSessions];
-                                  newSessions[sIdx].clockOut = e.target.value || null;
+                                  newSessions[sIdx].clock_out = e.target.value || null;
                                   setEditSessions(newSessions);
                                 }}
                                 className="border border-gray-300 rounded p-1 text-sm bg-white"
@@ -210,10 +210,10 @@ export const CalendarView = () => {
                                   <span className="text-[10px] text-orange-400 font-bold uppercase w-8">休憩</span>
                                   <input 
                                     type="time" 
-                                    value={rest.start} 
+                                    value={rest.start_time} 
                                     onChange={(e) => {
                                       const newSessions = [...editSessions];
-                                      newSessions[sIdx].rests[rIdx].start = e.target.value;
+                                      newSessions[sIdx].rests[rIdx].start_time = e.target.value;
                                       setEditSessions(newSessions);
                                     }}
                                     className="border border-gray-200 rounded p-0.5 text-xs bg-white w-20"
@@ -221,10 +221,10 @@ export const CalendarView = () => {
                                   <span className="text-xs text-gray-400">-</span>
                                   <input 
                                     type="time" 
-                                    value={rest.end || ''} 
+                                    value={rest.end_time || ''} 
                                     onChange={(e) => {
                                       const newSessions = [...editSessions];
-                                      newSessions[sIdx].rests[rIdx].end = e.target.value || null;
+                                      newSessions[sIdx].rests[rIdx].end_time = e.target.value || null;
                                       setEditSessions(newSessions);
                                     }}
                                     className="border border-gray-200 rounded p-0.5 text-xs bg-white w-20"
@@ -244,7 +244,7 @@ export const CalendarView = () => {
                               <button 
                                 onClick={() => {
                                   const newSessions = [...editSessions];
-                                  newSessions[sIdx].rests.push({ start: '', end: '' });
+                                  newSessions[sIdx].rests.push({ id: String(Date.now()), session_id: session.id, start_time: '', end_time: null });
                                   setEditSessions(newSessions);
                                 }}
                                 className="text-[10px] text-orange-600 hover:text-orange-800 font-bold flex items-center bg-orange-50 px-1.5 py-0.5 rounded transition"
@@ -255,7 +255,7 @@ export const CalendarView = () => {
                           </div>
                         ))}
                         <button 
-                          onClick={() => setEditSessions([...editSessions, { id: String(Date.now()), clockIn: '', clockOut: '', rests: [] }])}
+                          onClick={() => setEditSessions([...editSessions, { id: String(Date.now()), record_id: record?.id || '', clock_in: '', clock_out: null, rests: [] }])}
                           className="w-full py-2 border-2 border-dashed border-gray-200 rounded-lg text-sm text-gray-500 hover:border-blue-300 hover:text-blue-600 transition flex items-center justify-center gap-1"
                         >
                           <Plus className="w-4 h-4" /> 勤務セッションを追加
@@ -266,19 +266,19 @@ export const CalendarView = () => {
                     <>
                       <td className="p-4 align-top text-gray-700 border-b border-gray-50">
                         {record?.sessions.length ? record.sessions.map((s, idx) => (
-                          <div key={idx} className="min-h-[24px]">{s.clockIn || '-'}</div>
+                          <div key={idx} className="min-h-[24px]">{s.clock_in || '-'}</div>
                         )) : '-'}
                       </td>
                       <td className="p-4 align-top text-gray-700 border-b border-gray-50">
                         {record?.sessions.length ? record.sessions.map((s, idx) => (
-                          <div key={idx} className="min-h-[24px]">{s.clockOut || '-'}</div>
+                          <div key={idx} className="min-h-[24px]">{s.clock_out || '-'}</div>
                         )) : '-'}
                       </td>
                       <td className="p-4 align-top text-gray-700 text-sm border-b border-gray-50">
                         {record?.sessions.length ? record.sessions.map((s, idx) => (
                           <div key={idx} className="min-h-[24px]">
                             {s.rests.length > 0 
-                              ? s.rests.map((r, ri) => <span key={ri} className="mr-2">{r.start}-{r.end || ''}</span>) 
+                              ? s.rests.map((r, ri) => <span key={ri} className="mr-2">{r.start_time}-{r.end_time || ''}</span>) 
                               : '-'}
                           </div>
                         )) : '-'}
