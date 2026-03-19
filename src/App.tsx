@@ -1,5 +1,7 @@
+import { useEffect } from 'react';
 import { BrowserRouter, Routes, Route, Navigate, Link, useLocation } from 'react-router-dom';
 import { useStore } from './store';
+import type { AppState } from './types';
 import { Login } from './components/Login';
 import { Home } from './components/Home';
 import { CalendarView as Calendar } from './components/Calendar';
@@ -8,7 +10,7 @@ import { Monthly } from './components/Monthly';
 import { Settings } from './components/Settings';
 
 function Navigation() {
-  const currentUser = useStore(state => state.currentUser);
+  const currentUser = useStore((state: AppState) => state.currentUser);
   const location = useLocation();
   if (!currentUser) return null;
 
@@ -39,7 +41,12 @@ function Navigation() {
 }
 
 function App() {
-  const currentUser = useStore(state => state.currentUser);
+  const currentUser = useStore((state: AppState) => state.currentUser);
+  const fetchInitialData = useStore((state: AppState) => state.fetchInitialData);
+
+  useEffect(() => {
+    fetchInitialData();
+  }, [fetchInitialData]);
 
   return (
     <BrowserRouter>
