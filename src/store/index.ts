@@ -78,16 +78,16 @@ export const useStore = create<AppState>((set, get) => ({
 
   setCurrentUser: (user) => set({ currentUser: user }),
 
-  clockIn: async (userId) => {
+  clockIn: async (user_id) => {
     const today = format(new Date(), 'yyyy-MM-dd');
     const now = format(new Date(), 'HH:mm');
 
     // 1. レコードの取得または作成
-    let record = get().records.find(r => r.userId === userId && r.date === today);
+    let record = get().records.find(r => r.user_id === user_id && r.date === today);
     if (!record) {
       const { data, error } = await supabase
         .from('time_records')
-        .insert([{ user_id: userId, date: today, state: 'working' }])
+        .insert([{ user_id: user_id, date: today, state: 'working' }])
         .select()
         .single();
       if (error) {
@@ -120,10 +120,10 @@ export const useStore = create<AppState>((set, get) => ({
     get().fetchInitialData();
   },
 
-  startRest: async (userId) => {
+  startRest: async (user_id) => {
     const today = format(new Date(), 'yyyy-MM-dd');
     const now = format(new Date(), 'HH:mm');
-    const record = get().records.find(r => r.userId === userId && r.date === today && r.state === 'working');
+    const record = get().records.find(r => r.user_id === user_id && r.date === today && r.state === 'working');
     
     if (!record) return;
 
@@ -148,10 +148,10 @@ export const useStore = create<AppState>((set, get) => ({
     get().fetchInitialData();
   },
 
-  endRest: async (userId) => {
+  endRest: async (user_id) => {
     const today = format(new Date(), 'yyyy-MM-dd');
     const now = format(new Date(), 'HH:mm');
-    const record = get().records.find(r => r.userId === userId && r.date === today && r.state === 'resting');
+    const record = get().records.find(r => r.user_id === user_id && r.date === today && r.state === 'resting');
     
     if (!record) return;
 
@@ -180,10 +180,10 @@ export const useStore = create<AppState>((set, get) => ({
     get().fetchInitialData();
   },
 
-  clockOut: async (userId) => {
+  clockOut: async (user_id) => {
     const today = format(new Date(), 'yyyy-MM-dd');
     const now = format(new Date(), 'HH:mm');
-    const record = get().records.find(r => r.userId === userId && r.date === today && (r.state === 'working' || r.state === 'resting'));
+    const record = get().records.find(r => r.user_id === user_id && r.date === today && (r.state === 'working' || r.state === 'resting'));
     
     if (!record) return;
 
@@ -220,24 +220,88 @@ export const useStore = create<AppState>((set, get) => ({
   },
 
   updateRecord: async (recordId, updates) => {
-    const { error } = await supabase
-      .from('time_records')
-      .update(updates)
-      .eq('id', recordId);
-    if (error) {
-      console.error('Error updating record:', error);
-      return;
+    const { sessions, ...recordUpdates } = updates;
+    
+    if (Object.keys(recordUpdates).length > 0) {
+      const { error } = await supabase
+        .from('time_records')
+        .update(recordUpdates)
+        .eq('id', recordId);
+      if (error) console.error('Error updating record:', error);
     }
+
+    if (sessions !== undefined) {
+      // Delete existing sessions (rest_records will cascade delete)
+      await supabase.from('work_sessions').delete().eq('record_id', recordId);
+
+      // Insert new sessions
+      for (const session of sessions) {
+        const { id, record_id, rests, ...sessionData } = session;
+        const { data: newSession, error: sErr } = await supabase
+          .from('work_sessions')
+          .insert([{ ...sessionData, record_id: recordId }])
+          .select()
+          .single();
+        
+        if (sErr || !newSession) {
+          console.error('Error inserting session:', sErr);
+          continue;
+        }
+
+        if (rests && rests.length > 0) {
+          const restsToInsert = rests.map(r => {
+            const { id: rId, session_id, ...restData } = r;
+            return { ...restData, session_id: newSession.id };
+          });
+          const { error: rErr } = await supabase.from('rest_records').insert(restsToInsert);
+          if (rErr) console.error('Error inserting rests:', rErr);
+        }
+      }
+    }
+
     get().fetchInitialData();
   },
 
   addRecord: async (record) => {
-    const { error } = await supabase
+    // eslint-disable-next-line @typescript-eslint/no-unused-vars
+    const { id, sessions, ...recordData } = record;
+    
+    const { data: newRecord, error } = await supabase
       .from('time_records')
-      .insert([record]);
-    if (error) {
+      .insert([recordData])
+      .select()
+      .single();
+      
+    if (error || !newRecord) {
       console.error('Error adding record:', error);
       return;
+    }
+
+    if (sessions && sessions.length > 0) {
+      for (const session of sessions) {
+        // eslint-disable-next-line @typescript-eslint/no-unused-vars
+        const { id: sId, record_id, rests, ...sessionData } = session;
+        const { data: newSession, error: sErr } = await supabase
+          .from('work_sessions')
+          .insert([{ ...sessionData, record_id: newRecord.id }])
+          .select()
+          .single();
+        
+        if (sErr || !newSession) {
+          console.error('Error inserting session in addRecord:', sErr);
+          continue;
+        }
+
+        if (rests && rests.length > 0) {
+          const restsToInsert = rests.map(r => {
+            // eslint-disable-next-line @typescript-eslint/no-unused-vars
+            const { id: rId, session_id, ...restData } = r;
+            return { ...restData, session_id: newSession.id };
+          });
+          const { error: rErr } = await supabase.from('rest_records').insert(restsToInsert);
+          if (rErr) console.error('Error inserting rests in addRecord:', rErr);
+        }
+      }
     }
     get().fetchInitialData();
   },

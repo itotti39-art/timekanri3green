@@ -22,7 +22,7 @@ export const Home = () => {
   if (!currentUser) return null;
 
   const today = format(new Date(), 'yyyy-MM-dd');
-  const todayRecord = records.find(r => r.userId === currentUser.id && r.date === today);
+  const todayRecord = records.find(r => r.user_id === currentUser.id && r.date === today);
 
   const currentState = todayRecord?.state || 'idle';
 
@@ -32,7 +32,7 @@ export const Home = () => {
   const monthEnd = endOfMonth(todayDate);
   
   const thisMonthRecords = records.filter(r => 
-    r.userId === currentUser.id &&
+    r.user_id === currentUser.id &&
     isWithinInterval(new Date(r.date), { start: monthStart, end: monthEnd })
   );
 
@@ -61,7 +61,7 @@ export const Home = () => {
     acc + r.sessions.reduce((sum, s) => sum + calculateSessionMinutes(s), 0), 0
   );
   const totalHours = totalMinutes / 60;
-  const estimatedCost = totalHours * currentUser.hourlyRate;
+  const estimatedCost = totalHours * currentUser.hourly_rate;
   // ------------------------------
 
   return (

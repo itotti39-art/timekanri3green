@@ -45,10 +45,10 @@ export const Dashboard = () => {
   let totalCost = 0;
   
   const workerStats = workerUsers.map(worker => {
-    const workerRecords = thisMonthRecords.filter(r => r.userId === worker.id);
+    const workerRecords = thisMonthRecords.filter(r => r.user_id === worker.id);
     const minutes = workerRecords.reduce((acc, r) => acc + calculateRecordMinutes(r), 0);
     const hours = minutes / 60;
-    const cost = hours * worker.hourlyRate;
+    const cost = hours * worker.hourly_rate;
     
     totalHours += hours;
     totalCost += cost;

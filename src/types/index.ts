@@ -2,7 +2,7 @@ export type User = {
   id: string; // UUID from Supabase
   name: string;
   pin: string;
-  hourlyRate: number;
+  hourly_rate: number;
   role: 'admin' | 'worker';
 };
 
@@ -25,7 +25,7 @@ export type WorkSession = {
 
 export type TimeRecord = {
   id: string; // UUID
-  userId: string;
+  user_id: string;
   date: string; // YYYY-MM-DD
   sessions: WorkSession[];
   state: ShiftState;
@@ -41,10 +41,10 @@ export type AppState = {
   deleteUser: (id: string) => Promise<void>;
   setCurrentUser: (user: User | null) => void;
   
-  clockIn: (userId: string) => Promise<void>;
-  clockOut: (userId: string) => Promise<void>;
-  startRest: (userId: string) => Promise<void>;
-  endRest: (userId: string) => Promise<void>;
+  clockIn: (user_id: string) => Promise<void>;
+  clockOut: (user_id: string) => Promise<void>;
+  startRest: (user_id: string) => Promise<void>;
+  endRest: (user_id: string) => Promise<void>;
   
   updateRecord: (recordId: string, updates: Partial<TimeRecord>) => Promise<void>;
   addRecord: (record: TimeRecord) => Promise<void>;

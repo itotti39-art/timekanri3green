@@ -21,7 +21,7 @@ export const Settings = () => {
     addUser({
       name: newName,
       pin: newPin,
-      hourlyRate: Number(newHourlyRate) || 0,
+      hourly_rate: Number(newHourlyRate) || 0,
       role: newRole
     });
 
@@ -154,8 +154,8 @@ export const Settings = () => {
                           <span className="text-gray-400 mr-1">¥</span>
                           <input
                             type="number"
-                            value={user.hourlyRate}
-                            onChange={(e) => updateUser(user.id, { hourlyRate: Number(e.target.value) || 0 })}
+                            value={user.hourly_rate}
+                            onChange={(e) => updateUser(user.id, { hourly_rate: Number(e.target.value) || 0 })}
                             className="bg-transparent border-b border-transparent hover:border-gray-300 focus:border-green-500 outline-none px-1 py-0.5 w-20 text-right"
                           />
                         </div>

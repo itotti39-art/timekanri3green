@@ -19,7 +19,7 @@ export const CalendarView = () => {
   const monthEnd = endOfMonth(currentDate);
   const days = eachDayOfInterval({ start: monthStart, end: monthEnd });
 
-  const userRecords = records.filter(r => r.userId === currentUser.id);
+  const userRecords = records.filter(r => r.user_id === currentUser.id);
 
   const getRecordForDay = (day: Date) => {
     const dateStr = format(day, 'yyyy-MM-dd');
@@ -69,7 +69,7 @@ export const CalendarView = () => {
       if (cleanedSessions.length > 0) {
         addRecord({
           id: String(Date.now()),
-          userId: currentUser.id,
+          user_id: currentUser.id,
           date: format(new Date(dayStr), 'yyyy-MM-dd'),
           sessions: cleanedSessions,
           state: cleanedSessions.some(s => s.clock_in && !s.clock_out) ? 'working' : 'finished'
@@ -87,7 +87,7 @@ export const CalendarView = () => {
     acc + r.sessions.reduce((sum, s) => sum + calculateSessionMinutes(s), 0), 0
   );
   const totalHours = totalMinutes / 60;
-  const estimatedCost = totalHours * currentUser.hourlyRate;
+  const estimatedCost = totalHours * currentUser.hourly_rate;
 
   return (
     <div className="bg-white rounded-xl shadow-md border border-gray-100 overflow-hidden">

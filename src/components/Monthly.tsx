@@ -17,7 +17,7 @@ export const Monthly = () => {
   
   const displayRecords = selectedUserId === 'all' 
     ? monthRecords 
-    : monthRecords.filter(r => r.userId === selectedUserId);
+    : monthRecords.filter(r => r.user_id === selectedUserId);
 
   const calculateSessionMinutes = (session: WorkSession) => {
     if (!session.clock_in || !session.clock_out) return 0;
@@ -42,14 +42,14 @@ export const Monthly = () => {
   };
 
   const getUserName = (id: string) => users.find(u => u.id === id)?.name || '不明';
-  const getUserRate = (id: string) => users.find(u => u.id === id)?.hourlyRate || 0;
+  const getUserRate = (id: string) => users.find(u => u.id === id)?.hourly_rate || 0;
 
   const handleExportCSV = () => {
     // CSVヘッダー
     const header = ['日付', '作業者名', '勤務詳細', '稼働時間', '概算給与', '状態'];
     const rows = displayRecords.map(r => {
       const hours = calculateHours(r);
-      const rate = getUserRate(r.userId);
+      const rate = getUserRate(r.user_id);
       const cost = Math.floor(hours * rate);
       const sessionDetails = r.sessions
         .map(s => `${s.clock_in}-${s.clock_out || '未退勤'}`)
@@ -57,7 +57,7 @@ export const Monthly = () => {
       
       return [
         r.date,
-        getUserName(r.userId),
+        getUserName(r.user_id),
         `"${sessionDetails}"`,
         hours.toFixed(2),
         cost.toString(),
@@ -81,7 +81,7 @@ export const Monthly = () => {
   // 合計の計算
   const totalStats = displayRecords.reduce((acc, r) => {
     const hours = calculateHours(r);
-    const cost = Math.floor(hours * getUserRate(r.userId));
+    const cost = Math.floor(hours * getUserRate(r.user_id));
     return {
       hours: acc.hours + hours,
       cost: acc.cost + cost
@@ -171,11 +171,11 @@ export const Monthly = () => {
           <tbody className="divide-y divide-gray-100">
             {sortedRecords.map(r => {
               const hours = calculateHours(r);
-              const cost = Math.floor(hours * getUserRate(r.userId));
+              const cost = Math.floor(hours * getUserRate(r.user_id));
               return (
                 <tr key={r.id} className="hover:bg-gray-50 transition">
                   <td className="p-4 text-gray-700">{r.date}</td>
-                  <td className="p-4 font-medium">{getUserName(r.userId)}</td>
+                  <td className="p-4 font-medium">{getUserName(r.user_id)}</td>
                   <td className="p-4 text-center">
                     <div className="flex flex-wrap justify-center gap-2">
                       {r.sessions.map((s, idx) => (
